@@ -1,10 +1,12 @@
 getTrialsBySearch = function(con,
-                             condition = c('breast cancer', 'liver cancer'),
-                             age = 18,
-                             gender = 'Male',
+                             condition = c('breast cancer'),
+                             age = 60,
+                             gender = 'Female',
                              country = 'United States',
-                             state = c('New York', 'New Jersey'),
-                             ctrl = TRUE) {
+                             state = NULL,
+                             status = c('Recruiting'),
+                             phase = NULL,
+                             ctrl = FALSE) {
   ### init trials ###
   final_trials = NULL
   condition_trials = NULL
@@ -13,13 +15,13 @@ getTrialsBySearch = function(con,
   country_trials = NULL
   state_trials = NULL
   ctrl_trials = NULL
+  status_trials = NULL
+  phase_trials = NULL
   
   ### get condition defined trials ###
   # condition = c('breast cancer', 'liver cancer')
   if (!is.null(condition)) {
     condition = tolower(condition)
-    # fix bug for Alzheimer's Disease
-    condition = gsub("'", "''", condition)
     condition = paste0("'", condition, "'")
     condition = paste0(condition, collapse = ",")
     condition = paste0("(", condition, ")")
@@ -31,6 +33,7 @@ getTrialsBySearch = function(con,
         ""
       )
     )
+    cat(paste0('get trials defined by conditions : ' , length(unique(condition_trials$nct_id))))
   }
   
   ### end ###
@@ -53,6 +56,8 @@ getTrialsBySearch = function(con,
                                  gender,
                                  ""
                                ))
+    cat(paste0('get trials defined by gender : ' , length(unique(gender_trials[,1]))))
+    
   }
   ### end ###
   
@@ -95,6 +100,7 @@ getTrialsBySearch = function(con,
       ) | is.na(maximum_age_as_unit)
       ), nct_id]
     age_trials = data.table(nct_id = age_nct)
+    cat(paste0('get trials defined by age : ' , length(unique(age_trials$nct_id))))
   }
   ### end ###
   
@@ -111,7 +117,9 @@ getTrialsBySearch = function(con,
                                   country,
                                   ""
                                 ))
+    cat(paste0('get trials defined by country : ' , length(unique(country_trials[,1]))))
   }
+  
   ### end ###
   
   ### get state defined trials ###
@@ -120,27 +128,73 @@ getTrialsBySearch = function(con,
     state = paste0("'", state, "'")
     state = paste0(state, collapse = ",")
     state = paste0("(", state, ")")
+    sql_query = paste0(
+      "SELECT DISTINCT nct_id FROM facilities WHERE state IN ",
+      state, " AND country IN ",country, 
+      ""
+    )
     state_trials = dbGetQuery(con,
-                              paste0(
-                                "SELECT DISTINCT nct_id FROM facilities WHERE country IN ",
-                                state,
-                                ""
-                              ))
+                              sql_query)
+    
+    cat(paste0('get trials defined by state : ' , length(unique(state_trials[,1]))))
+    
   }
   ### end ###
   
   ### get health defined trials ###
-  # ctrl = TRUE
   if (ctrl == TRUE) {
-    ctrl = "('Accepts Healthy Volunteers')"
+    ctrl = "('Accepts Healthy Volunteers','null')"
+    sql_query = paste0(
+      "SELECT DISTINCT nct_id FROM eligibilities WHERE healthy_volunteers IN ",
+      ctrl,
+      ""
+    )
+    cat(sql_query,"\n")
     ctrl_trials = dbGetQuery(
       con,
+      sql_query
+    )
+    cat(paste0('get trials defined by ctrl : ' , length(unique(ctrl_trials$nct_id))))
+  } else{
+    ctrl_trials = NULL
+  }
+  
+  ### end ###
+  
+  ### get status defined trials ###
+  if (!is.null(status)) {
+    status = paste0("'", status, "'")
+    status = paste0(status, collapse = ",")
+    status = paste0("(", status, ")")
+    sql_query =  paste0(
+      "SELECT DISTINCT nct_id FROM studies WHERE last_known_status IN ",
+      status,
+      ""
+    )
+    status_trials = dbGetQuery(
+      con,
+      sql_query
+    )
+    cat(paste0('get trials defined by status : ' , length(unique(status_trials$nct_id))))
+    
+  }
+  ### end ###
+  
+  ### get phase defined trials ###
+  if (!is.null(phase)) {
+    phase = paste0("'", phase, "'")
+    phase = paste0(phase, collapse = ",")
+    phase = paste0("(", phase, ")")
+    phase_trials = dbGetQuery(
+      con,
       paste0(
-        "SELECT DISTINCT nct_id FROM eligibilities WHERE healthy_volunteers IN ",
-        ctrl,
+        "SELECT DISTINCT nct_id FROM studies WHERE phase IN ",
+        phase,
         ""
       )
     )
+    cat(paste0('get trials defined by phase : ' , length(unique(phase_trials$nct_id))))
+    
   }
   ### end ###
   
@@ -151,23 +205,51 @@ getTrialsBySearch = function(con,
     age_trials$nct_id,
     country_trials$nct_id,
     state_trials$nct_id,
-    ctrl_trials$nct_id
+    ctrl_trials$nct_id,
+    phase_trials$nct_id,
+    status_trials$nct_id
   )
   
   union_trials = Reduce(
     union,
     var_list
   )
+  cat(paste0("length of union trials", length(union_trials),"\n"))
   
-  intesect_trials = union_trials
+  intersect_trials = union_trials
   
   for(single_trials in var_list){
     if(!is.null(single_trials)){
-      intesect_trials = intersect(single_trials,intesect_trials)
+      intersect_trials = intersect(single_trials,intersect_trials)
+      cat(paste0("length of intersect trials", length(intersect_trials),"\n"))
+      
     }
   }
-  ### end ###
-    
-  return(intesect_trials)
+  
+  cat(paste0("length of final trials", length(intersect_trials),"\n"))
+  return(intersect_trials)
+}
+
+getTrialsInfoById = function(con,nct_id_list){
+  nct_id_list
+  if (!is.null(nct_id_list)) {
+    nct_id = nct_id_list
+    nct_id = paste0("'", nct_id, "'")
+    nct_id = paste0(nct_id, collapse = ",")
+    nct_id = paste0("(", nct_id, ")")
+    sql_query =  paste0(
+      "SELECT DISTINCT nct_id,brief_title,study_type,last_known_status,phase FROM studies
+      WHERE nct_id IN ",
+      nct_id,
+      ""
+    )
+    cat(sql_query,"\n")
+    trials_info = dbGetQuery(
+      con,
+      sql_query
+    )
+    trials_info
+    return(trials_info)
+  }
 }
 

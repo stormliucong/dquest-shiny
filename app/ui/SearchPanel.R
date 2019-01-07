@@ -56,6 +56,26 @@ tabPanel(
       label = 'Select state',
       choices = NULL,
       multiple = TRUE
+    ),
+    ### end ###
+    
+    ### search by Phase ###
+    selectizeInput(
+      "phase",
+      label = "Enter phase to search",
+      choices = CACHE$PHASE_TABLE$phase,
+      multiple = TRUE,
+      selected = NULL
+    ),
+    ### search by Phase ###
+    
+    ### search by status ###
+    selectizeInput(
+      "status",
+      label = "Enter recruitment status to search",
+      choices = CACHE$STATUS_TABLE$last_known_status,
+      multiple = TRUE,
+      selected = NULL
     )
     ### end ###
   ),

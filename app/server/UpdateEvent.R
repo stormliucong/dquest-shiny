@@ -18,10 +18,13 @@ observeEvent(input$update, {
     # # render removed trial table
     # output$trial_info_removal = renderTrialInfo(setdiff(nct2, nct1), TRIAL_INFO, session)
     
-    # render trial table
+    cat("getting trials info ...\n")
+    TRIAL_INFO = getTrialsInfoById(con = react$MY_CON,nct_id_list = react$trialSet_tmp)
+    cat("dim of TRIAL_INFO", dim(TRIAL_INFO),"\n")
+    # render trial table 
+    cat("rendering pages ...\n")
     output$trial_info = renderTrialInfo(react$trialSet_tmp, TRIAL_INFO, session)
-    # go to the trial tab when clicking the button
-    # updateTabsetPanel(session, inputId = "navbar", selected = "trials")
+    
   } else{
     showNotification("All trials have been filtered out.")
   }

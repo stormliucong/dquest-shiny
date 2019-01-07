@@ -21,7 +21,7 @@ ui <- navbarPage(
     title = "search among all trials",
     placement = "bottom",
     trigger = "hover"
-  ),
+  ),   
   bsTooltip(
     id = "continue",
     title = "Start question or continue to next question",
