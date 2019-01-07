@@ -22,18 +22,14 @@ getTrialsBySearch = function(con,
   # condition = c('breast cancer', 'liver cancer')
   if (!is.null(condition)) {
     condition = tolower(condition)
-    condition = paste0("'", condition, "'")
-    condition = paste0(condition, collapse = ",")
-    condition = paste0("(", condition, ")")
-    condition_trials = dbGetQuery(
-      con,
-      paste0(
-        "SELECT DISTINCT nct_id FROM conditions WHERE downcase_name IN ",
-        condition,
-        ""
-      )
-    )
-    cat(paste0('get trials defined by conditions : ' , length(unique(condition_trials$nct_id))))
+    # condition = paste0("'", condition, "'")
+    # condition = paste0(condition, collapse = ",")
+    # condition = paste0("(", condition, ")")
+    condition_trials = tbl(con,"conditions") %>%
+      filter(downcase_name %in% condition) %>%
+      select(nct_id) %>% distinct() %>%
+      collect()
+    cat(paste0('get trials defined by conditions : ' , length(unique(condition_trials$nct_id)),"\n"))
   }
   
   ### end ###
@@ -41,160 +37,87 @@ getTrialsBySearch = function(con,
   ### get gender defined trials ###
   # gender = "male"
   if (!is.null(gender)) {
-    if (tolower(gender) == 'all') {
-      gender = paste0("('", gender, "','')")
-    } else{
-      if (tolower(gender) == 'male') {
-        gender = paste0("('", gender, "','All','')")
-      } else{
-        gender = paste0("('", gender, "','All','')")
-      }
+    if(tolower(gender) == "male"){
+      gender_trials = tbl(con,"eligibilities") %>% 
+        filter(gender != 'Female') %>%
+        select(nct_id) %>% distinct() %>%
+        collect()
+      cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
+      
     }
-    gender_trials = dbGetQuery(con,
-                               paste0(
-                                 "SELECT DISTINCT nct_id FROM eligibilities WHERE gender IN ",
-                                 gender,
-                                 ""
-                               ))
-    cat(paste0('get trials defined by gender : ' , length(unique(gender_trials[,1]))))
     
+    if(tolower(gender) == "female"){
+      gender_trials = tbl(con,"eligibilities") %>% 
+        filter(gender != 'Male') %>%
+        select(nct_id) %>% distinct() %>%
+        collect()
+      cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
+    }
   }
   ### end ###
   
   ### get age defined trials ###
   # age = 1
-  if (!is.null(age)) {
-    all_age = dbGetQuery(
-      con,
-      paste0(
-        "SELECT DISTINCT nct_id, minimum_age, maximum_age FROM eligibilities"
-      )
-    )
-    all_age = data.table(all_age)
-    # split table.
-    all_age$minimum_age_as_number = as.character(lapply(strsplit(
-      as.character(all_age$minimum_age), split = " "
-    ), "[", 1))
-    all_age$minimum_age_as_unit = as.character(lapply(strsplit(
-      as.character(all_age$minimum_age), split = " "
-    ), "[", 2))
-    all_age$maximum_age_as_number = as.character(lapply(strsplit(
-      as.character(all_age$maximum_age), split = " "
-    ), "[", 1))
-    all_age$maximum_age_as_unit = as.character(lapply(strsplit(
-      as.character(all_age$maximum_age), split = " "
-    ), "[", 2))
-    
-    age_nct = all_age[((
-      minimum_age_as_number <= age &
-        minimum_age_as_unit == 'Years'
-    ) |
-      (
-        is.na(minimum_age_as_unit) |
-          minimum_age_as_unit != 'Years'
-      )
-    ) &
-      ((
-        maximum_age_as_number >= age &
-          maximum_age_as_unit == 'Years'
-      ) | is.na(maximum_age_as_unit)
-      ), nct_id]
-    age_trials = data.table(nct_id = age_nct)
-    cat(paste0('get trials defined by age : ' , length(unique(age_trials$nct_id))))
+  if (!is.null(age) & age > 0) {
+    age_tmp = tbl(con,"eligibilities") %>%
+      select(nct_id,minimum_age,maximum_age) %>% as.data.frame() %>%
+      separate(minimum_age,c("min","min_unit")," ") %>% 
+      separate(maximum_age,c("max","max_unit")," ") %>% 
+      as_tibble()
+    age_tbl = age_tmp %>% filter(min =="N/A" & max == "N/A")
+    age_tbl = age_tmp %>% filter(min == "N/A" & (as.integer(max) > age & max_unit == 'Years')) %>% bind_rows(age_tbl)
+    age_tbl = age_tmp %>% filter(max == "N/A" & (as.integer(min) < age & min_unit == 'Years')) %>% bind_rows(age_tbl)
+    age_trials = age_tbl %>% select(nct_id) %>% distinct()
+    cat(paste0('get trials defined by age : ' , length(unique(age_trials$nct_id)),"\n"))
   }
   ### end ###
   
   
   ### get contry defined trials ###
   # country = c('United States', 'liver cancer')
-  if (!is.null(country)) {
-    country = paste0("'", country, "'")
-    country = paste0(country, collapse = ",")
-    country = paste0("(", country, ")")
-    country_trials = dbGetQuery(con,
-                                paste0(
-                                  "SELECT DISTINCT nct_id FROM facilities WHERE country IN ",
-                                  country,
-                                  ""
-                                ))
-    cat(paste0('get trials defined by country : ' , length(unique(country_trials[,1]))))
+  country_ = country
+  if (!is.null(country_)) {
+    country_trials = tbl(con,"facilities") %>% filter(country %in% country_) %>% select(nct_id) %>% distinct() %>% collect()
+    cat(paste0('get trials defined by country : ' , length(unique(country_trials$nct_id)),"\n"))
   }
   
   ### end ###
   
   ### get state defined trials ###
   # state = c('Illinois', 'New York')
+  state_ = state
   if (!is.null(state)) {
-    state = paste0("'", state, "'")
-    state = paste0(state, collapse = ",")
-    state = paste0("(", state, ")")
-    sql_query = paste0(
-      "SELECT DISTINCT nct_id FROM facilities WHERE state IN ",
-      state, " AND country IN ",country, 
-      ""
-    )
-    state_trials = dbGetQuery(con,
-                              sql_query)
-    
+    state_trials = tbl(con,"facilities") %>% filter(state %in% state_) %>% select(nct_id) %>% distinct() %>% collect()
     cat(paste0('get trials defined by state : ' , length(unique(state_trials[,1]))))
-    
   }
   ### end ###
   
   ### get health defined trials ###
   if (ctrl == TRUE) {
-    ctrl = "('Accepts Healthy Volunteers','null')"
-    sql_query = paste0(
-      "SELECT DISTINCT nct_id FROM eligibilities WHERE healthy_volunteers IN ",
-      ctrl,
-      ""
-    )
-    cat(sql_query,"\n")
-    ctrl_trials = dbGetQuery(
-      con,
-      sql_query
-    )
-    cat(paste0('get trials defined by ctrl : ' , length(unique(ctrl_trials$nct_id))))
-  } else{
-    ctrl_trials = NULL
+    ctrl_trials = tbl(con,"eligibilities") %>% filter(healthy_volunteers != 'No') %>%
+      select(nct_id) %>% distinct() %>% collect()
+    cat(paste0('get trials defined by ctrl : ' , length(unique(ctrl_trials$nct_id)),"\n"))
   }
   
   ### end ###
   
   ### get status defined trials ###
   if (!is.null(status)) {
-    status = paste0("'", status, "'")
-    status = paste0(status, collapse = ",")
-    status = paste0("(", status, ")")
-    sql_query =  paste0(
-      "SELECT DISTINCT nct_id FROM studies WHERE last_known_status IN ",
-      status,
-      ""
-    )
-    status_trials = dbGetQuery(
-      con,
-      sql_query
-    )
-    cat(paste0('get trials defined by status : ' , length(unique(status_trials$nct_id))))
+    status_trials = tbl(con,"studies") %>%
+      filter(is.na(last_known_status) | last_known_status %in% status) %>% 
+      select(nct_id) %>% distinct() %>% collect()
+    cat(paste0('get trials defined by status : ' , length(unique(status_trials$nct_id)),"\n"))
     
   }
   ### end ###
   
   ### get phase defined trials ###
+  phase_ = phase
   if (!is.null(phase)) {
-    phase = paste0("'", phase, "'")
-    phase = paste0(phase, collapse = ",")
-    phase = paste0("(", phase, ")")
-    phase_trials = dbGetQuery(
-      con,
-      paste0(
-        "SELECT DISTINCT nct_id FROM studies WHERE phase IN ",
-        phase,
-        ""
-      )
-    )
-    cat(paste0('get trials defined by phase : ' , length(unique(phase_trials$nct_id))))
-    
+    phase_trials = tbl(con,"studies") %>%
+      filter(is.na(phase) | phase %in% phase_ | phase == 'N/A') %>% 
+      select(nct_id) %>% distinct() %>% collect()
+    cat(paste0('get trials defined by phase : ' , length(unique(phase_trials$nct_id)),"\n"))
   }
   ### end ###
   
@@ -214,19 +137,19 @@ getTrialsBySearch = function(con,
     union,
     var_list
   )
-  cat(paste0("length of union trials", length(union_trials),"\n"))
+  cat(paste0("length of union trials: ", length(union_trials),"\n"))
   
   intersect_trials = union_trials
   
   for(single_trials in var_list){
     if(!is.null(single_trials)){
       intersect_trials = intersect(single_trials,intersect_trials)
-      cat(paste0("length of intersect trials", length(intersect_trials),"\n"))
+      cat(paste0("length of intersect trials: ", length(intersect_trials),"\n"))
       
     }
   }
   
-  cat(paste0("length of final trials", length(intersect_trials),"\n"))
+  cat(paste0("length of final trials: ", length(intersect_trials),"\n"))
   return(intersect_trials)
 }
 
@@ -243,7 +166,6 @@ getTrialsInfoById = function(con,nct_id_list){
       nct_id,
       ""
     )
-    cat(sql_query,"\n")
     trials_info = dbGetQuery(
       con,
       sql_query

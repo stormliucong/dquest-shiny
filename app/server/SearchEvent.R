@@ -18,10 +18,9 @@ observeEvent(input$search, {
                               phase = input$phase
                             )
                             # update search result.
-                            react$wMatrix_tmp = react$wMatrix[nct_id %in% react$trialSet_tmp]
+                            # react$wMatrix_tmp = react$wMatrix[nct_id %in% react$trialSet_tmp]
                             cat("getting trials info ...\n")
                             TRIAL_INFO = getTrialsInfoById(con = react$MY_CON,nct_id_list = react$trialSet_tmp)
-                            cat("dim of TRIAL_INFO", dim(TRIAL_INFO),"\n")
                             # render trial table 
                             cat("rendering pages ...\n")
                             output$trial_info = renderTrialInfo(react$trialSet_tmp, TRIAL_INFO, session)

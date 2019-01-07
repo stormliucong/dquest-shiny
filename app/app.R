@@ -46,31 +46,24 @@ ui <- navbarPage(
 # Define server logic
 server <- function(input, output, session) {
   # refresh session and disconnect db.
-  session$onEnded(
-    {function() {
-      observe(dbDisconnect(conn = react$MY_CON))
-      gc()
-    }}
-  )
+  # session$onEnded(
+  #   {function() {
+  #     observe(dbDisconnect(conn = react$MY_CON))
+  #     gc()
+  #   }}
+  # )
   
   
   ### init global var ###
   react <- reactiveValues(
-    wMatrix = CRITERIA_LIB,
-    # working lib
-    wMatrix_tmp = NULL,
+   
+    # working set
     trialSet = NULL,
-    # candidate pool
+    # working set before confirm
     trialSet_tmp = NULL,
     common_concept_id = NULL,
     asked_concept_id = NULL,
-    MY_CON = getApi(
-      dbname = dbname,
-      host = host,
-      port = port,
-      user = user,
-      password = password
-    )
+    MY_CON = CON
   )
   ### end ###
   

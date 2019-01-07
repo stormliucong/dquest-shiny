@@ -18,6 +18,8 @@ library(devtools)
 library(RPostgreSQL)
 library(data.table)
 library(dplyr)
+library(tidyr)
+library(dbplyr)
 library(DT)
 ### end of loading library ###
 
@@ -34,6 +36,8 @@ source('./util/Optimizer.R')
 source('./util/Refresher.R')
 source('./util/Updater.R')
 source('./util/Helpers.R') 
+source('./util/WMatrix.R') 
+
 ### end ###
 
 
@@ -47,5 +51,6 @@ CON = getApi(
 )
 CACHE = getCache(CON)
 COUNTRY_NAME = unique(CACHE$COUNTRY_STATE_TABLE$country)
+# CRITERIA_LIB = get(load(file = "model/kb_m_0.9_ls_1_c_5_agg_TRUE_small.rda"))
 CRITERIA_LIB = get(load(file = "model/kb_m_0.9_ls_1_c_5_agg_TRUE_small.rda"))
 ### end ###

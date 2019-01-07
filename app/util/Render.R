@@ -27,9 +27,6 @@ renderTrialInfo = function(trialSet, trialDt, session, number = 999999) {
     data$status = as.factor(data$last_known_status)
     data$study_type = as.factor(data$study_type)
     data = data[, c('nct_id', 'brief_title', 'phase', 'last_known_status','study_type')]
-    cat('r1\n')
-    data %>% print()
-    cat('r2\n')
     output = DT::renderDataTable(
       data,
       escape = FALSE,
@@ -43,7 +40,8 @@ renderTrialInfo = function(trialSet, trialDt, session, number = 999999) {
 }
 
 renderQuestion = function(concept, wMatrix, session) {
-  domain = wMatrix[common_omop_id == concept] %>% pull(domain) %>% unique()
+  wMatrix %>% print()
+  domain = wMatrix %>% filter(common_omop_id == concept) %>% pull(domain) %>% unique()
   concept_name = wMatrix %>% filter(common_omop_id == concept) %>% pull(common_omop_name) %>% unique()
   # major_value_unit = wMatrix %>% filter(common_omop_id == concept) %>% group_by(value_unit) %>% summarise(count = n()) %>% arrange(-count) %>% head(n = 1) %>% pull(value_unit)
   renderQuestionDomain(concept_name = concept_name,domain = domain)

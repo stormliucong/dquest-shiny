@@ -1,17 +1,18 @@
 observeEvent(input$update, {
-  req(react$wMatrix, react$common_concept_id)
-  if (dim(react$wMatrix)[1] > 0) {
+  req(react$common_concept_id)
+  wMatrix = getWMatrix(react$trialSet,react$asked_concept_id)
+  if (dim(wMatrix)[1] > 0) {
     # standardize answer
     answer = input2answer(input)
     # update the wMatrix_tmp.
-    react$wMatrix_tmp = updateWMatrix(
-      wMatrix = react$wMatrix,
+    wMatrix_tmp = updateWMatrix(
+      wMatrix = wMatrix,
       common_concept_id = react$common_concept_id,
       answer = answer
     )
     # update trial set
-    nct1 = react$wMatrix_tmp %>% pull(nct_id) %>% unique()
-    nct2 = react$wMatrix %>% pull(nct_id) %>% unique()
+    nct1 = wMatrix_tmp %>% pull(nct_id) %>% unique()
+    nct2 = wMatrix %>% pull(nct_id) %>% unique()
     nct3 = react$trialSet
     react$trialSet_tmp = setdiff(nct3, setdiff(nct2, nct1))
     
