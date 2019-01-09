@@ -11,10 +11,10 @@ ui <- navbarPage(
   
   ### panels ###
   source(file.path("ui", "SearchPanel.R"),  local = TRUE)$value,
-  # source(file.path("ui", "TrialPanel.R"),  local = TRUE)$value,
-  # source(file.path("ui", "AboutPanel.R"),  local = TRUE)$value,
-  source(file.path("ui", "TrialPanel_test.R"),  local = TRUE)$value,
-  source(file.path("ui", "AboutPanel_test.R"),  local = TRUE)$value,
+  source(file.path("ui", "TrialPanel.R"),  local = TRUE)$value,
+  source(file.path("ui", "AboutPanel.R"),  local = TRUE)$value,
+  # source(file.path("ui", "TrialPanel_test.R"),  local = TRUE)$value,
+  # source(file.path("ui", "AboutPanel_test.R"),  local = TRUE)$value,
   ### end ###
   
   ### add toolTip ###

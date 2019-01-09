@@ -15,8 +15,8 @@ observeEvent(input$continue, {
     #refresh question form.
     refreshQA(session)
     # render question.
-    cat('common concept id\n')
-    cat(react$common_concept_id)
+    # cat('common concept id\n')
+    # cat(react$common_concept_id)
     renderQuestion(react$common_concept_id, wMatrix, session)
     
     # update count.

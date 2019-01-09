@@ -29,7 +29,7 @@ getTrialsBySearch = function(con,
       filter(downcase_name %in% condition) %>%
       select(nct_id) %>% distinct() %>%
       collect()
-    cat(paste0('get trials defined by conditions : ' , length(unique(condition_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by conditions : ' , length(unique(condition_trials$nct_id)),"\n"))
   }
   
   ### end ###
@@ -42,7 +42,7 @@ getTrialsBySearch = function(con,
         filter(gender != 'Female') %>%
         select(nct_id) %>% distinct() %>%
         collect()
-      cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
+      # cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
       
     }
     
@@ -51,7 +51,7 @@ getTrialsBySearch = function(con,
         filter(gender != 'Male') %>%
         select(nct_id) %>% distinct() %>%
         collect()
-      cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
+      # cat(paste0('get trials defined by gender : ' , length(unique(gender_trials$nct_id)),"\n"))
     }
   }
   ### end ###
@@ -68,7 +68,7 @@ getTrialsBySearch = function(con,
     age_tbl = age_tmp %>% filter(min == "N/A" & (as.integer(max) > age & max_unit == 'Years')) %>% bind_rows(age_tbl)
     age_tbl = age_tmp %>% filter(max == "N/A" & (as.integer(min) < age & min_unit == 'Years')) %>% bind_rows(age_tbl)
     age_trials = age_tbl %>% select(nct_id) %>% distinct()
-    cat(paste0('get trials defined by age : ' , length(unique(age_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by age : ' , length(unique(age_trials$nct_id)),"\n"))
   }
   ### end ###
   
@@ -78,7 +78,7 @@ getTrialsBySearch = function(con,
   country_ = country
   if (!is.null(country_)) {
     country_trials = tbl(con,"facilities") %>% filter(country %in% country_) %>% select(nct_id) %>% distinct() %>% collect()
-    cat(paste0('get trials defined by country : ' , length(unique(country_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by country : ' , length(unique(country_trials$nct_id)),"\n"))
   }
   
   ### end ###
@@ -88,7 +88,7 @@ getTrialsBySearch = function(con,
   state_ = state
   if (!is.null(state)) {
     state_trials = tbl(con,"facilities") %>% filter(state %in% state_) %>% select(nct_id) %>% distinct() %>% collect()
-    cat(paste0('get trials defined by state : ' , length(unique(state_trials[,1]))))
+    # cat(paste0('get trials defined by state : ' , length(unique(state_trials[,1]))))
   }
   ### end ###
   
@@ -96,7 +96,7 @@ getTrialsBySearch = function(con,
   if (ctrl == TRUE) {
     ctrl_trials = tbl(con,"eligibilities") %>% filter(healthy_volunteers != 'No') %>%
       select(nct_id) %>% distinct() %>% collect()
-    cat(paste0('get trials defined by ctrl : ' , length(unique(ctrl_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by ctrl : ' , length(unique(ctrl_trials$nct_id)),"\n"))
   }
   
   ### end ###
@@ -106,7 +106,7 @@ getTrialsBySearch = function(con,
     status_trials = tbl(con,"studies") %>%
       filter(is.na(last_known_status) | last_known_status %in% status) %>% 
       select(nct_id) %>% distinct() %>% collect()
-    cat(paste0('get trials defined by status : ' , length(unique(status_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by status : ' , length(unique(status_trials$nct_id)),"\n"))
     
   }
   ### end ###
@@ -117,7 +117,7 @@ getTrialsBySearch = function(con,
     phase_trials = tbl(con,"studies") %>%
       filter(is.na(phase) | phase %in% phase_ | phase == 'N/A') %>% 
       select(nct_id) %>% distinct() %>% collect()
-    cat(paste0('get trials defined by phase : ' , length(unique(phase_trials$nct_id)),"\n"))
+    # cat(paste0('get trials defined by phase : ' , length(unique(phase_trials$nct_id)),"\n"))
   }
   ### end ###
   
@@ -137,19 +137,19 @@ getTrialsBySearch = function(con,
     union,
     var_list
   )
-  cat(paste0("length of union trials: ", length(union_trials),"\n"))
+  # cat(paste0("length of union trials: ", length(union_trials),"\n"))
   
   intersect_trials = union_trials
   
   for(single_trials in var_list){
     if(!is.null(single_trials)){
       intersect_trials = intersect(single_trials,intersect_trials)
-      cat(paste0("length of intersect trials: ", length(intersect_trials),"\n"))
+      # cat(paste0("length of intersect trials: ", length(intersect_trials),"\n"))
       
     }
   }
   
-  cat(paste0("length of final trials: ", length(intersect_trials),"\n"))
+  # cat(paste0("length of final trials: ", length(intersect_trials),"\n"))
   return(intersect_trials)
 }
 

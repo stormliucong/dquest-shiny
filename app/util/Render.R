@@ -40,7 +40,6 @@ renderTrialInfo = function(trialSet, trialDt, session, number = 999999) {
 }
 
 renderQuestion = function(concept, wMatrix, session) {
-  wMatrix %>% print()
   domain = wMatrix %>% filter(common_omop_id == concept) %>% pull(domain) %>% unique()
   concept_name = wMatrix %>% filter(common_omop_id == concept) %>% pull(common_omop_name) %>% unique()
   # major_value_unit = wMatrix %>% filter(common_omop_id == concept) %>% group_by(value_unit) %>% summarise(count = n()) %>% arrange(-count) %>% head(n = 1) %>% pull(value_unit)

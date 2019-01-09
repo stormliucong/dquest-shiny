@@ -19,11 +19,11 @@ observeEvent(input$update, {
     # # render removed trial table
     # output$trial_info_removal = renderTrialInfo(setdiff(nct2, nct1), TRIAL_INFO, session)
     
-    cat("getting trials info ...\n")
+    # cat("getting trials info ...\n")
     TRIAL_INFO = getTrialsInfoById(con = react$MY_CON,nct_id_list = react$trialSet_tmp)
-    cat("dim of TRIAL_INFO", dim(TRIAL_INFO),"\n")
+    # cat("dim of TRIAL_INFO", dim(TRIAL_INFO),"\n")
     # render trial table 
-    cat("rendering pages ...\n")
+    # cat("rendering pages ...\n")
     output$trial_info = renderTrialInfo(react$trialSet_tmp, TRIAL_INFO, session)
     
     TRIAL_INFO = getTrialsInfoById(con = react$MY_CON,nct_id_list = setdiff(nct2, nct1))

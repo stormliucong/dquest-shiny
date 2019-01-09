@@ -14,6 +14,11 @@ insertButtons <- function(session){
       class = "btn-success"
     )
   )
+  insertUI(
+    selector = "#update",
+    where = "afterEnd",
+    ui = p("Click update before click continue!!!")
+  )
   addTooltip(
     session,
     id = "update",

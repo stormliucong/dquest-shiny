@@ -6,14 +6,14 @@ updateWMatrix = function(wMatrix,
   # print(paste0("--trials Origin:",wMatrix %>% pull(nct_id) %>% unique() %>% length()))
   
   relatedTrialsWMatrix = wMatrix_new %>% filter(common_omop_id == common_concept_id)
-  relatedTrialsWMatrix %>% print()
+  # relatedTrialsWMatrix %>% print()
   # print(paste0("--trials Related:",relatedTrialsWMatrix %>% pull(nct_id) %>% unique() %>% length()))
   
   # only compute if patient answer the question.
   if (!is.null(answer)) {
     domain = relatedTrialsWMatrix %>%
       pull(domain) %>% unique()
-    cat("domain is ", domain, "\n")
+    # cat("domain is ", domain, "\n")
     trialsRemoved = removeTrialsByDomain(relatedTrialsWMatrix, domain, answer)
     # print(paste0("--trials Removed:",length(trialsRemoved)))
     # print(paste0("--trials Removed examples:",head(trialsRemoved)))
@@ -50,7 +50,7 @@ removeConceptId = function(wMatrix,common_concept_id){
     # start of questionarrier
     wMatrix_new = wMatrix
   }else{
-    print(common_concept_id)
+    # print(common_concept_id)
     wMatrix_new = wMatrix %>% filter(common_omop_id != common_concept_id) %>% as.data.table()
     
   }
