@@ -1,6 +1,6 @@
 renderTrialInfo = function(trialSet, trialDt, session, number = 999999) {
-  ouput = NULL
-  if(!is.null(trialDt)){
+  output = NULL
+  if(dim(trialDt)[1] > 0){
     data = data.table(trialDt)
     data = data[nct_id %in% trialSet] %>% head(n = number)
     data[, nct_id := paste0(
